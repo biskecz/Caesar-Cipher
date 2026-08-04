@@ -1,53 +1,99 @@
-# Function to encrypt text using Caesar Cipher
-def encrypt(text, shift):
+# 33-letter Russian alphabet (including Ё)
+RU_LOWER = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+RU_UPPER = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+
+
+def encrypt_eng(text, shift):
     result = ""
     for char in text:
         if char.isalpha():
-            # Determine base ASCII value for uppercase or lowercase letters
             shift_base = ord('A') if char.isupper() else ord('a')
-            # Shift character and wrap around using modulo
             result += chr((ord(char) - shift_base + shift) % 26 + shift_base)
         else:
-            # Keep non-alphabetic characters unchanged
             result += char
     return result
 
 
-# Function to decrypt text using Caesar Cipher
-def decrypt(text, shift):
-    result_1 = ""
+def decrypt_eng(text, shift):
+    return encrypt_eng(text, -shift)
+
+
+def encrypt_ru(text, shift):
+    result = ""
     for char in text:
-        if char.isalpha():
-            shift_base = ord('A') if char.isupper() else ord('a')
-            # Shift back character and wrap around using modulo
-            result_1 += chr((ord(char) - shift_base - shift) % 26 + shift_base)
+        if char in RU_LOWER:
+            idx = (RU_LOWER.index(char) + shift) % 33
+            result += RU_LOWER[idx]
+        elif char in RU_UPPER:
+            idx = (RU_UPPER.index(char) + shift) % 33
+            result += RU_UPPER[idx]
         else:
-            result_1 += char
-    return result_1
+            result += char
+    return result
 
 
-# Display welcome banner
-print(
-    "\n",
-    "=" * 50,
-    "\n Welcome to the Caesar Cipher Encryption Program! \n",
-    "- -" * 17,
-    "\n",
-)
+def decrypt_ru(text, shift):
+    return encrypt_ru(text, -shift)
 
-# Get user input
-choice = input("Do you want to encrypt or decrypt? (e/d): ").lower()
-text = input("Enter the text: ")
-shift = int(input("Enter the shift value (1-25): "))
 
-print("-" * 50, "\n")
+def brute_force(text, lang):
+    max_shift = 26 if lang == "eng" else 33
 
-# Execute action based on user selection
-if choice == "e":
-    print("Encrypted text:", encrypt(text, shift))
-elif choice == "d":
-    print("Decrypted text:", decrypt(text, shift))
-else:
-    print(
-        "Invalid choice. Please enter 'e' for encryption or 'd' for decryption."
-    )
+    print("\n" + "=" * 40)
+    print(f"  BRUTE-FORCE RESULTS ({lang.upper()})")
+    print("=" * 40)
+
+    for shift in range(1, max_shift):
+        if lang == "eng":
+            decrypted_text = decrypt_eng(text, shift)
+        else:
+            decrypted_text = decrypt_ru(text, shift)
+
+        print(f"[Shift {shift:2d}] -> {decrypted_text}")
+        print("-" * 50)
+
+    print("=" * 40 + "\n")
+
+
+# --- Main Menu ---
+def main():
+    print("\n" + "=" * 50)
+    print(" Welcome to the Caesar Cipher Program! ")
+    print("- -" * 17 + "\n")
+
+    lang_choice = input("Which language do you want to use? (eng/ru): ").strip().lower()
+    choice = input("Do you want to encrypt, decrypt, brute force? (e/d/b): ").strip().lower()
+
+    if lang_choice == "eng":
+        text = input("Enter the English text: ")
+
+        if choice in ["e", "d"]:
+            shift = int(input("Enter the shift value (1-25): "))
+            if choice == "e":
+                print("Encrypted text:", encrypt_eng(text, shift))
+            elif choice == "d":
+                print("Decrypted text:", decrypt_eng(text, shift))
+        elif choice == "b":
+            brute_force(text, "eng")
+        else:
+            print("Invalid operation choice.")
+
+    elif lang_choice == "ru":
+        text = input("Enter the Russian text: ")
+
+        if choice in ["e", "d"]:
+            shift = int(input("Enter the shift value (1-32): "))
+            if choice == "e":
+                print("Encrypted text:", encrypt_ru(text, shift))
+            elif choice == "d":
+                print("Decrypted text:", decrypt_ru(text, shift))
+        elif choice == "b":
+            brute_force(text, "ru")
+        else:
+            print("Invalid operation choice.")
+    else:
+        print("Invalid language choice.")
+
+
+if __name__ == "__main__":
+    main()
